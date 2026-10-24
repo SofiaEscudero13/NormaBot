@@ -1,0 +1,1627 @@
+{
+    "name": "NormaBot",
+    "flow": [
+        {
+            "id": 1,
+            "module": "telegram:WatchUpdates",
+            "version": 1,
+            "parameters": {
+                "__IMTHOOK__": 2957700
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 150
+                },
+                "setupValidation": {
+                    "result": {
+                        "valid": true,
+                        "fields": []
+                    },
+                    "version": 1,
+                    "configuration": "c9d0f1cfc4dcc7a"
+                },
+                "restore": {
+                    "parameters": {
+                        "__IMTHOOK__": {
+                            "data": {
+                                "editable": "false"
+                            },
+                            "label": "Telegram NormaBot"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTHOOK__",
+                        "type": "hook:telegramapi",
+                        "label": "Webhook",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 150
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 3,
+                            "module": "gemini-ai:createACompletionGeminiPro",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 11819584
+                            },
+                            "filter": {
+                                "name": "Es Texto",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.message.text}}",
+                                            "o": "exist"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "model": "gemini-3.5-flash",
+                                "contents": [
+                                    {
+                                        "role": "user",
+                                        "parts": [
+                                            {
+                                                "text": "{{1.message.text}}",
+                                                "type": "text"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "generationConfig": {
+                                    "imageConfig": {},
+                                    "thinkingConfig": {}
+                                },
+                                "system_instruction": {
+                                    "parts": [
+                                        {
+                                            "text": "Eres Norma 📚, asistente práctica de Bibliotecología (RCAA2, BNMM, Dewey 23 y Koha).\r\n\r\nREGLAS ESTRICTAS DE FORMATO Y COMPORTAMIENTO (OBLIGATORIAS):\r\n1. UNA SOLA FUNCIÓN POR RESPUESTA: NUNCA entregues todo junto. Responde ÚNICAMENTE lo que el usuario pidió (solo RCAA2/ISBD, o solo Carga en Koha MARC21, o solo Auditoría, o solo Dewey, o solo Materia, o solo Errores de Koha).\r\n2. SI ENVÍA UNA FOTO DE LIBRO O DATOS SIN INDICAR QUÉ NECESITA (sin comando ni pedido en el comentario): NO hagas la ficha ni el MARC21 todavía. Solo lista en 3 líneas los datos que lograste leer de la imagen y dile qué comando escribir o reenviar con la foto para elegir qué hacer.\r\n3. SI ENVÍA UN COMANDO SOLO SIN DATOS (ej. envía únicamente \"/rcaa2\", \"/marc\", \"/auditoria\", \"/validar\", \"/dewey\", \"/materia\" o \"/koha\"): NO inventes ejemplos. Respóndele en 2 líneas pidiéndole que envíe los datos, el tema o la foto indicando en el comentario qué función necesita.\r\n4. PROHIBIDO usar formato Markdown: NUNCA uses asteriscos (*), ni numerales para títulos (###), ni guiones separadores (---), ni acentos graves (`). Escribe únicamente en texto plano usando emojis y MAYÚSCULAS para títulos cortos.\r\n5. BREVEDAD EXTREMA: Respuestas cortas y al grano para pantalla de celular.\r\n\r\n================================================================================\r\nCRITERIOS TÉCNICOS QUE DEBES APLICAR SIEMPRE:\r\n================================================================================\r\n1. RCAA2 + POLÍTICA BNMM (MARC21):\r\n   - Mayúsculas y tildes: Minúscula por regla general (Apéndice A). Tildes siempre según RAE en mayúsculas y minúsculas (RCAA2 1.0G). En diarios (245) mayúscula en palabras significativas (La Nación); en revistas solo en la primera palabra (Caras y caretas).\r\n   - Símbolo \"cm\": En la BNMM \"cm\" es símbolo alfabetizable, NO abreviatura: va SIN punto (\"22 cm\"), salvo que cierre el área. Redondear fracciones siempre al centímetro entero superior (21,2 cm -> 22 cm, Regla 2.5D1).\r\n   - Abreviaturas permitidas: ed., p., v., t., il., col., tr., comp., dir., s.l., s.n., no. En subcampo $e (100/700) nunca usar \"pról.\" ni \"introd.\", usar \"prologuista\" o \"autor de la introducción\".\r\n   - Espaciado ISBD: Espacio antes y después en \" / \", \" ; \" y \" : \" (en 245 y 300). En 260 los dos puntos llevan espacio solo después (\"Lugar : Editorial, Año.\"). Omitir términos comerciales en 260 $b (\"Editorial\", \"S.A.\", Regla 1.4D2).\r\n   - Campo 020 (ISBN): En la BNMM va CON guiones en $a. Aclaraciones (\"rústica\", \"v. 1\", \"obra completa\") van en $q en minúscula y sin paréntesis.\r\n   - Campo 245: Indicador 1 (0 por título, 1 con autor en 1XX). Indicador 2: caracteres no alfabetizables incluyendo el espacio (\"La \" = 3, \"Los \" = 4).\r\n\r\n2. AUTORIDADES DE MATERIA CAMPO 650 $a (BNMM Y KOHA):\r\n   - En 650 $a solo van términos Autorizados (A). Si propone un término No Autorizado (NA), indícale \"(NA) -> Usar: [Término Autorizado (A)]\" y sugiere 3 opciones Autorizadas (A) específicas.\r\n   - Caso testigo: \"mente\" -> \"Mente (NA)\" / \"Mente -- Enfermedades (NA)\" -> Usar: \"Inteligencia (A)\". Opciones (A): \"Mente y cuerpo (A)\", \"Ciencias de la mente (A)\", \"Filosofía de la mente (A)\", \"Curación por la mente (A)\".\r\n   - Regla BNMM: Los campos controlados (1XX, 6XX, 7XX) NO llevan punto final y NUNCA van todos en mayúsculas. Términos libres van en 653 $a.\r\n\r\n3. CLASIFICACIÓN DECIMAL DEWEY EDICIÓN 23 (CAMPO 082):\r\n   - Construye el número según DDC 23 detallando en 3 líneas la jerarquía (Clase + División + Sección + Tabla auxiliar si aplica).\r\n   - Carga en Koha: 082 [Pestaña 0] -> Ind: 04 | $a [Número] | $2 23 (y en el ejemplar: 952 $o).\r\n\r\n4. ERRORES FRECUENTES EN KOHA:\r\n   - 🟡 Autogestión (Lo resuelve el alumno en Koha):\r\n     • \"Can't save this record\": Faltan obligatorios -> clic en 000 y 008 (Pestaña 0), completar 245 $a (Pestaña 2) y 942 $c (Pestaña 9).\r\n     • Campo 100 o 650 bloqueado/grisado: Usar el ícono de búsqueda/lupa al lado del $a para vincular una autoridad existente.\r\n     • Error en 952 / \"Barcode already exists\": Código repetido en 952 $p o faltan 952 $a (origen), 952 $b (actual) y 952 $y (tipo de ítem).\r\n     • Caracteres rotos (Ã±) en Z39.50: Conflicto UTF-8/MARC-8, corregir a mano.\r\n   - 🔴 Servidor/Soporte (Requiere aviso):\r\n     • Libro guardado no aparece en el buscador: Indexador Zebra/Elasticsearch caído. No volver a cargar el libro.\r\n     • Error 500 / 502 / 504 / Software error: Caída de Plack/servidor.\r\n\r\n================================================================================\r\nPLANTILLAS DE RESPUESTA (USA SOLO LA QUE CORRESPONDA AL PEDIDO):\r\n================================================================================\r\n\r\n1. SI ENVÍA \"/start\" O UN SALUDO:\r\n¡Hola! Soy Norma 📚, tu asistente de Bibliotecología.\r\n\r\nDime qué tarea quieres hacer hoy (si mandas foto de un libro, escribe en el comentario qué opción necesitas):\r\n\r\n1️⃣ /rcaa2 + datos o foto ➔ Armo la Ficha ISBD y reglas RCAA2.\r\n2️⃣ /marc + datos o foto ➔ Armo la guía de carga en Koha (MARC21).\r\n3️⃣ /auditoria + tu ejercicio o captura de Koha ➔ Corrijo tus errores paso a paso.\r\n4️⃣ /dewey o /materia + tema ➔ Clasificación DDC 23 (082) o Autoridades BNMM (650).\r\n5️⃣ /koha + error o captura ➔ Solución técnica o mail para soporte.\r\n\r\n2. SI ENVÍA FOTO DE UN LIBRO O DATOS SUELTOS SIN ACLARAR QUÉ QUIERE:\r\n📖 DATOS IDENTIFICADOS:\r\n• Título / Autor: [Datos leídos]\r\n• Edición / Pie de imprenta / ISBN: [Datos leídos]\r\n• Datos faltantes en la imagen: [Ej: Falta portada o paginación/cm]\r\n\r\n¿Qué necesitas hacer con este material? Copia los datos identificados o reenvía la foto indicando en el comentario:\r\n👉 \"Ficha ISBD\" (/rcaa2)\r\n👉 \"Carga en Koha MARC21\" (/marc)\r\n👉 \"Clasificación Dewey\" (/dewey)\r\n\r\n3. SI ENVÍA UN COMANDO VACÍO (ej. solo \"/rcaa2\", \"/marc\", \"/auditoria\", \"/validar\", \"/dewey\", \"/materia\" o \"/koha\"):\r\n👉 Para usar esta función, escríbeme el comando seguido de tu consulta (ej: \"/dewey historia económica argentina\") o envíame la foto/datos poniendo en el comentario qué necesitas hacer.\r\n\r\n4. SI PIDE FICHA / RCAA2 (\"/rcaa2\" o pide catalogación descriptiva):\r\n📋 FICHA ISBD (RCAA2):\r\n[Ficha ISBD completa respetando puntuación y espacios]\r\n\r\n📌 Criterios RCAA2 aplicados:\r\n• [1 o 2 reglas clave aplicadas, ej: uso de corchetes, abreviaturas, mayúsculas Apéndice A]\r\n\r\n5. SI PIDE CARGA EN KOHA / MARC21 (\"/marc\" o pide cómo cargarlo en Koha):\r\n💻 CARGA EN KOHA (MARC21):\r\n(Nota: En \"Ind\", el símbolo # significa dejar el casillero vacío)\r\n\r\n• 020 [ISBN - Pestaña 0]\r\n  Ind: ## | $a [ISBN con guiones] | $q [encuadernación]\r\n• 100 [Autor principal - Pestaña 1]\r\n  Ind: 1# | $a [Apellido, Nombre sin punto final]\r\n• 245 [Título y responsabilidad - Pestaña 2]\r\n  Ind: 1X | $a [Título] : | $b [subtítulo] / | $c [responsabilidad].\r\n• 250 [Edición - Pestaña 2]\r\n  Ind: ## | $a [Edición]\r\n• 260 [Publicación - Pestaña 2]\r\n  Ind: ## | $a [Lugar] : | $b [Editorial limpia], | $c [Año].\r\n• 300 [Descripción física - Pestaña 3]\r\n  Ind: ## | $a [Páginas] : | $b [il.] ; | $c [X cm]\r\n\r\n6. SI PIDE AUDITORÍA O ENVÍA CAPTURA DE SU CARGA EN KOHA (\"/auditoria\", \"/validar\" o pide corregir su ejercicio):\r\n🔍 AUDITORÍA RCAA2 / BNMM:\r\n🔴 [Error detectado + regla y cómo corregirlo en 1 línea]\r\n🟡 [Dato faltante o advertencia en 1 línea]\r\n🟢 [Puntos correctos]\r\n\r\n✅ Corrección lista para copiar:\r\n[Mostrar únicamente la línea o el campo corregido con su nombre y pestaña]\r\n\r\n7. SI PIDE DEWEY (\"/dewey\" o pide clasificar):\r\n🔢 CLASIFICACIÓN DEWEY 23: [Número]\r\n\r\n🧭 Construcción:\r\n• [Clase/División]\r\n• [Sección / Tabla auxiliar aplicada]\r\n• Criterio: [1 línea explicando por qué va en esa disciplina]\r\n\r\n💻 Carga en Koha:\r\n• 082 [Clasificación Dewey - Pestaña 0]\r\n  Ind: 04 | $a [Número] | $2 23 (y en el ejemplar: 952 $o).\r\n\r\n8. SI PIDE MATERIA (\"/materia\" o consulta campo 650):\r\n🏷️ AUTORIDAD DE MATERIA (BNMM):\r\nEstado: [Término] (NA) ➔ Usar: [Término Autorizado] (A)\r\n(O indicar si ya es Autorizado (A)).\r\n\r\n📋 Específicos relacionados (A):\r\n• [Opción 1 (A)]\r\n• [Opción 2 (A)]\r\n• [Opción 3 (A)]\r\n\r\n💻 Carga en Koha (sin punto final):\r\n• 650 [Tema / Materia - Pestaña 6]\r\n  Ind: #4 | $a [Término] (usar $x tema, $z lugar, $v forma si aplica; libres en 653 $a).\r\n\r\n9. SI REPORTA UN ERROR DE KOHA O ENVÍA CAPTURA DE UN FALLO (\"/koha\"):\r\n🔍 DIAGNÓSTICO: [🟡 Autogestión en Koha / 🔴 Falla de servidor]\r\n[Explicación de 2 líneas].\r\n\r\n🛠️ SOLUCIÓN PASO A PASO:\r\n[2 o 3 pasos concretos de qué tocar en Koha].\r\n\r\n✉️ MAIL PARA DOCENTE / SOPORTE (si aplica):\r\nAsunto: [Asunto breve]\r\n[Cuerpo de 4 líneas formal y claro]."
+                                        }
+                                    ]
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 0
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "c3ae943a586c009f"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "model": {
+                                            "mode": "chose",
+                                            "label": "Gemini 3.5 Flash"
+                                        },
+                                        "contents": {
+                                            "mode": "chose",
+                                            "items": [
+                                                {
+                                                    "role": {
+                                                        "mode": "chose",
+                                                        "label": "User"
+                                                    },
+                                                    "parts": {
+                                                        "mode": "chose",
+                                                        "items": [
+                                                            {
+                                                                "type": {
+                                                                    "mode": "chose",
+                                                                    "label": "Text"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "serviceTier": {
+                                            "mode": "chose",
+                                            "label": "Empty"
+                                        },
+                                        "url_context": {
+                                            "mode": "chose"
+                                        },
+                                        "code_execution": {
+                                            "mode": "chose"
+                                        },
+                                        "safetySettings": {
+                                            "mode": "chose"
+                                        },
+                                        "generationConfig": {
+                                            "nested": {
+                                                "imageConfig": {
+                                                    "nested": {
+                                                        "imageSize": {
+                                                            "mode": "chose",
+                                                            "label": "Empty"
+                                                        }
+                                                    }
+                                                },
+                                                "stopSequences": {
+                                                    "mode": "chose"
+                                                },
+                                                "thinkingConfig": {
+                                                    "nested": {
+                                                        "thinking_level": {
+                                                            "mode": "chose",
+                                                            "label": "Empty"
+                                                        },
+                                                        "include_thoughts": {
+                                                            "mode": "chose"
+                                                        }
+                                                    }
+                                                },
+                                                "mediaResolution": {
+                                                    "mode": "chose",
+                                                    "label": "Empty"
+                                                },
+                                                "responseMimeType": {
+                                                    "mode": "chose",
+                                                    "label": "Empty"
+                                                },
+                                                "responseModalities": {
+                                                    "mode": "chose"
+                                                }
+                                            }
+                                        },
+                                        "system_instruction": {
+                                            "nested": {
+                                                "parts": {
+                                                    "mode": "chose",
+                                                    "items": [
+                                                        null
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "google_maps_context": {
+                                            "mode": "chose"
+                                        },
+                                        "google_search_context": {
+                                            "mode": "chose"
+                                        },
+                                        "file_search_store_context": {
+                                            "mode": "chose"
+                                        },
+                                        "function_declarations_context": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "gemini-ai-q9zyjp"
+                                            },
+                                            "label": "Sofía's Gemini AI connection"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:gemini-ai-q9zyjp",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "model",
+                                        "type": "select",
+                                        "label": "AI Model",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "contents",
+                                        "spec": [
+                                            {
+                                                "name": "role",
+                                                "type": "select",
+                                                "label": "Role",
+                                                "options": [
+                                                    {
+                                                        "label": "User",
+                                                        "value": "user"
+                                                    },
+                                                    {
+                                                        "label": "Model",
+                                                        "value": "model"
+                                                    }
+                                                ],
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "parts",
+                                                "spec": [
+                                                    {
+                                                        "name": "type",
+                                                        "type": "select",
+                                                        "label": "Message Type",
+                                                        "options": [
+                                                            {
+                                                                "label": "Text",
+                                                                "value": "text",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "text",
+                                                                        "type": "text",
+                                                                        "label": "Text",
+                                                                        "required": true
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "label": "File",
+                                                                "value": "file",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "file_data",
+                                                                        "spec": [
+                                                                            {
+                                                                                "name": "mime_type",
+                                                                                "type": "text",
+                                                                                "label": "Mime Type",
+                                                                                "required": true
+                                                                            },
+                                                                            {
+                                                                                "help": "You can use public or signed URLs as input by using the URLs.",
+                                                                                "name": "file_uri",
+                                                                                "type": "text",
+                                                                                "label": "File URI",
+                                                                                "required": true
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "label": "File Data",
+                                                                        "required": true
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "label": "Function Call",
+                                                                "value": "functionCall",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "functionCall",
+                                                                        "spec": [
+                                                                            {
+                                                                                "help": "The name of the function to call.",
+                                                                                "name": "name",
+                                                                                "type": "text",
+                                                                                "label": "Name",
+                                                                                "required": true,
+                                                                                "validate": {
+                                                                                    "max": 64
+                                                                                }
+                                                                            },
+                                                                            {
+                                                                                "help": "The function parameters and values in JSON object format.",
+                                                                                "name": "args",
+                                                                                "type": "json",
+                                                                                "label": "Arguments"
+                                                                            },
+                                                                            {
+                                                                                "help": "The unique ID of the function call.",
+                                                                                "name": "id",
+                                                                                "type": "text",
+                                                                                "label": "Function Call ID"
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "label": "Function Call"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "label": "Function Response",
+                                                                "value": "functionResponse",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "functionResponse",
+                                                                        "spec": [
+                                                                            {
+                                                                                "help": "The name of the function to call.",
+                                                                                "name": "name",
+                                                                                "type": "text",
+                                                                                "label": "Name",
+                                                                                "required": true,
+                                                                                "validate": {
+                                                                                    "max": 64
+                                                                                }
+                                                                            },
+                                                                            {
+                                                                                "help": "The function response in JSON object format.",
+                                                                                "name": "response",
+                                                                                "type": "json",
+                                                                                "label": "Response",
+                                                                                "required": true
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "label": "Function Response"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ],
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "thoughtSignature",
+                                                        "type": "text",
+                                                        "label": "Thought Signature"
+                                                    }
+                                                ],
+                                                "type": "array",
+                                                "label": "Parts",
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Messages",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "system_instruction",
+                                        "spec": [
+                                            {
+                                                "name": "parts",
+                                                "spec": {
+                                                    "name": "value",
+                                                    "spec": [
+                                                        {
+                                                            "name": "text",
+                                                            "type": "text",
+                                                            "label": "Value"
+                                                        }
+                                                    ],
+                                                    "type": "collection",
+                                                    "label": "Prompt"
+                                                },
+                                                "type": "array",
+                                                "label": "Prompts"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "System Instructions"
+                                    },
+                                    {
+                                        "name": "safetySettings",
+                                        "spec": [
+                                            {
+                                                "name": "category",
+                                                "type": "select",
+                                                "label": "Category",
+                                                "options": [
+                                                    {
+                                                        "label": "Harassment content",
+                                                        "value": "HARM_CATEGORY_HARASSMENT"
+                                                    },
+                                                    {
+                                                        "label": "Hate speech and content",
+                                                        "value": "HARM_CATEGORY_HATE_SPEECH"
+                                                    },
+                                                    {
+                                                        "label": "Sexually explicit content.",
+                                                        "value": "HARM_CATEGORY_SEXUALLY_EXPLICIT"
+                                                    },
+                                                    {
+                                                        "label": "Dangerous content:",
+                                                        "value": "HARM_CATEGORY_DANGEROUS_CONTENT"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "name": "threshold",
+                                                "type": "select",
+                                                "label": "Threshold",
+                                                "options": [
+                                                    {
+                                                        "label": "Block low and above.",
+                                                        "value": "BLOCK_LOW_AND_ABOVE"
+                                                    },
+                                                    {
+                                                        "label": "Block medium and above.",
+                                                        "value": "BLOCK_MEDIUM_AND_ABOVE"
+                                                    },
+                                                    {
+                                                        "label": "Block only high.",
+                                                        "value": "BLOCK_ONLY_HIGH"
+                                                    },
+                                                    {
+                                                        "label": "Block none.",
+                                                        "value": "BLOCK_NONE"
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Safety Settings"
+                                    },
+                                    {
+                                        "name": "generationConfig",
+                                        "spec": [
+                                            {
+                                                "name": "stopSequences",
+                                                "spec": {
+                                                    "name": "value",
+                                                    "type": "text",
+                                                    "label": "Stop Sequence"
+                                                },
+                                                "type": "array",
+                                                "label": "Stop Sequences"
+                                            },
+                                            {
+                                                "name": "responseModalities",
+                                                "type": "select",
+                                                "label": "Response Modalities",
+                                                "multiple": true,
+                                                "validate": {
+                                                    "enum": [
+                                                        "text",
+                                                        "image"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "maxOutputTokens",
+                                                "type": "number",
+                                                "label": "Max Output Tokens"
+                                            },
+                                            {
+                                                "name": "temperature",
+                                                "type": "number",
+                                                "label": "Temperature",
+                                                "validate": {
+                                                    "max": 1,
+                                                    "min": 0
+                                                }
+                                            },
+                                            {
+                                                "name": "topP",
+                                                "type": "number",
+                                                "label": "Top P",
+                                                "validate": {
+                                                    "max": 1,
+                                                    "min": 0
+                                                }
+                                            },
+                                            {
+                                                "name": "topK",
+                                                "type": "number",
+                                                "label": "Top K"
+                                            },
+                                            {
+                                                "name": "thinkingConfig",
+                                                "spec": [
+                                                    {
+                                                        "name": "thinkingBudget",
+                                                        "type": "number",
+                                                        "label": "Thinking Budget"
+                                                    },
+                                                    {
+                                                        "name": "include_thoughts",
+                                                        "type": "boolean",
+                                                        "label": "Include Thoughts"
+                                                    },
+                                                    {
+                                                        "name": "thinking_level",
+                                                        "type": "select",
+                                                        "label": "Thinking Level",
+                                                        "validate": {
+                                                            "enum": [
+                                                                "low",
+                                                                "high"
+                                                            ]
+                                                        }
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "Thinking Config"
+                                            },
+                                            {
+                                                "name": "mediaResolution",
+                                                "type": "select",
+                                                "label": "Media Resolution",
+                                                "validate": {
+                                                    "enum": [
+                                                        "media_resolution_low",
+                                                        "media_resolution_medium",
+                                                        "media_resolution_high"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "imageConfig",
+                                                "spec": [
+                                                    {
+                                                        "name": "imageSize",
+                                                        "type": "select",
+                                                        "label": "Image Size",
+                                                        "validate": {
+                                                            "enum": [
+                                                                "1K",
+                                                                "2K",
+                                                                "4K"
+                                                            ]
+                                                        }
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "Image Configuration"
+                                            },
+                                            {
+                                                "name": "responseMimeType",
+                                                "type": "select",
+                                                "label": "Response Format"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Generation configurations"
+                                    },
+                                    {
+                                        "name": "tools",
+                                        "type": "any",
+                                        "label": "Tools"
+                                    },
+                                    {
+                                        "name": "tool_config",
+                                        "type": "any",
+                                        "label": "Tool Config"
+                                    },
+                                    {
+                                        "name": "function_declarations_context",
+                                        "type": "boolean",
+                                        "label": "Function Declarations Grounding"
+                                    },
+                                    {
+                                        "name": "url_context",
+                                        "type": "boolean",
+                                        "label": "URL Context"
+                                    },
+                                    {
+                                        "name": "google_search_context",
+                                        "type": "boolean",
+                                        "label": "Google Search Grounding"
+                                    },
+                                    {
+                                        "name": "code_execution",
+                                        "type": "boolean",
+                                        "label": "Code Execution"
+                                    },
+                                    {
+                                        "name": "google_maps_context",
+                                        "type": "boolean",
+                                        "label": "Google Maps Grounding"
+                                    },
+                                    {
+                                        "name": "file_search_store_context",
+                                        "type": "boolean",
+                                        "label": "File Search Store Context"
+                                    },
+                                    {
+                                        "name": "serviceTier",
+                                        "type": "select",
+                                        "label": "Inference Service Tier"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 6,
+                            "module": "telegram:SendReplyMessage",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 11819455
+                            },
+                            "mapper": {
+                                "text": "{{3.result}}",
+                                "chatId": "{{1.message.chat.id}}",
+                                "parseMode": "",
+                                "replyMarkup": "",
+                                "messageThreadId": "",
+                                "replyToMessageId": "",
+                                "replyMarkupAssembleType": "reply_markup_enter"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 900,
+                                    "y": 0
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "4c02fd6ac00460a2"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "parseMode": {
+                                            "label": "Empty"
+                                        },
+                                        "disableNotification": {
+                                            "mode": "chose"
+                                        },
+                                        "replyMarkupAssembleType": {
+                                            "label": "Enter the Reply Markup"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "telegram"
+                                            },
+                                            "label": "Telegram NormaBot"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:telegram",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "chatId",
+                                        "type": "text",
+                                        "label": "Chat ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "text",
+                                        "type": "text",
+                                        "label": "Text",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "messageThreadId",
+                                        "type": "number",
+                                        "label": "Message Thread ID"
+                                    },
+                                    {
+                                        "name": "parseMode",
+                                        "type": "select",
+                                        "label": "Parse Mode",
+                                        "validate": {
+                                            "enum": [
+                                                "Markdown",
+                                                "HTML"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "disableNotification",
+                                        "type": "boolean",
+                                        "label": "Disable Notifications"
+                                    },
+                                    {
+                                        "name": "disableWebPagePreview",
+                                        "type": "boolean",
+                                        "label": "Disable Link Previews"
+                                    },
+                                    {
+                                        "name": "replyToMessageId",
+                                        "type": "number",
+                                        "label": "Original Message ID"
+                                    },
+                                    {
+                                        "name": "replyMarkupAssembleType",
+                                        "type": "select",
+                                        "label": "Enter/Assemble the Reply Markup Field",
+                                        "validate": {
+                                            "enum": [
+                                                "reply_markup_enter",
+                                                "reply_markup_assemble"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "replyMarkup",
+                                        "type": "text",
+                                        "label": "Reply Markup"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 4,
+                            "module": "telegram:DownloadFile",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 11819455
+                            },
+                            "filter": {
+                                "name": "Es Foto",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.message.photo}}",
+                                            "o": "exist"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "fileId": "{{1.message.photo[2].file_id}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 300
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "5bc9ca059cddf75f"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "telegram"
+                                            },
+                                            "label": "Telegram NormaBot"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:telegram",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "fileId",
+                                        "type": "text",
+                                        "label": "File ID",
+                                        "required": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 9,
+                            "module": "gemini-ai:uploadAFile",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 11819584
+                            },
+                            "filter": null,
+                            "mapper": {
+                                "file_data": "{{4.fileOutput}}",
+                                "file_name": "{{4.fileName}}",
+                                "useFileSearchStore": false
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 900,
+                                    "y": 300
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "778cf6c67501e177"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "useFileSearchStore": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "gemini-ai-q9zyjp"
+                                            },
+                                            "label": "Sofía's Gemini AI connection"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:gemini-ai-q9zyjp",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "file_name",
+                                        "type": "text",
+                                        "label": "Name",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "file_data",
+                                        "type": "buffer",
+                                        "label": "Data",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "useFileSearchStore",
+                                        "type": "boolean",
+                                        "label": "Use File Search Store"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 7,
+                            "module": "gemini-ai:createACompletionGeminiPro",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 11819584
+                            },
+                            "mapper": {
+                                "model": "gemini-3.5-flash",
+                                "contents": [
+                                    {
+                                        "role": "user",
+                                        "parts": [
+                                            {
+                                                "text": "Analiza esta imagen enviada por el estudiante y responde ÚNICAMENTE la función que solicite en su comentario (si el comentario está vacío, aplica la plantilla 2 de extracción de datos y menú de opciones). Comentario adjunto del usuario: {{1.message.caption}}",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "type": "file",
+                                                "file_data": {
+                                                    "file_uri": "{{9.uri}}",
+                                                    "mime_type": "image/jpeg"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "generationConfig": {
+                                    "imageConfig": {},
+                                    "thinkingConfig": {}
+                                },
+                                "system_instruction": {
+                                    "parts": [
+                                        {
+                                            "text": "Eres Norma 📚, asistente práctica de Bibliotecología (RCAA2, BNMM, Dewey 23 y Koha).\r\n\r\nREGLAS ESTRICTAS DE FORMATO Y COMPORTAMIENTO (OBLIGATORIAS):\r\n1. UNA SOLA FUNCIÓN POR RESPUESTA: NUNCA entregues todo junto. Responde ÚNICAMENTE lo que el usuario pidió (solo RCAA2/ISBD, o solo Carga en Koha MARC21, o solo Auditoría, o solo Dewey, o solo Materia, o solo Errores de Koha).\r\n2. SI ENVÍA UNA FOTO DE LIBRO O DATOS SIN INDICAR QUÉ NECESITA (sin comando ni pedido en el comentario): NO hagas la ficha ni el MARC21 todavía. Solo lista en 3 líneas los datos que lograste leer de la imagen y dile qué comando escribir o reenviar con la foto para elegir qué hacer.\r\n3. SI ENVÍA UN COMANDO SOLO SIN DATOS (ej. envía únicamente \"/rcaa2\", \"/marc\", \"/auditoria\", \"/validar\", \"/dewey\", \"/materia\" o \"/koha\"): NO inventes ejemplos. Respóndele en 2 líneas pidiéndole que envíe los datos, el tema o la foto indicando en el comentario qué función necesita.\r\n4. PROHIBIDO usar formato Markdown: NUNCA uses asteriscos (*), ni numerales para títulos (###), ni guiones separadores (---), ni acentos graves (`). Escribe únicamente en texto plano usando emojis y MAYÚSCULAS para títulos cortos.\r\n5. BREVEDAD EXTREMA: Respuestas cortas y al grano para pantalla de celular.\r\n\r\n================================================================================\r\nCRITERIOS TÉCNICOS QUE DEBES APLICAR SIEMPRE:\r\n================================================================================\r\n1. RCAA2 + POLÍTICA BNMM (MARC21):\r\n   - Mayúsculas y tildes: Minúscula por regla general (Apéndice A). Tildes siempre según RAE en mayúsculas y minúsculas (RCAA2 1.0G). En diarios (245) mayúscula en palabras significativas (La Nación); en revistas solo en la primera palabra (Caras y caretas).\r\n   - Símbolo \"cm\": En la BNMM \"cm\" es símbolo alfabetizable, NO abreviatura: va SIN punto (\"22 cm\"), salvo que cierre el área. Redondear fracciones siempre al centímetro entero superior (21,2 cm -> 22 cm, Regla 2.5D1).\r\n   - Abreviaturas permitidas: ed., p., v., t., il., col., tr., comp., dir., s.l., s.n., no. En subcampo $e (100/700) nunca usar \"pról.\" ni \"introd.\", usar \"prologuista\" o \"autor de la introducción\".\r\n   - Espaciado ISBD: Espacio antes y después en \" / \", \" ; \" y \" : \" (en 245 y 300). En 260 los dos puntos llevan espacio solo después (\"Lugar : Editorial, Año.\"). Omitir términos comerciales en 260 $b (\"Editorial\", \"S.A.\", Regla 1.4D2).\r\n   - Campo 020 (ISBN): En la BNMM va CON guiones en $a. Aclaraciones (\"rústica\", \"v. 1\", \"obra completa\") van en $q en minúscula y sin paréntesis.\r\n   - Campo 245: Indicador 1 (0 por título, 1 con autor en 1XX). Indicador 2: caracteres no alfabetizables incluyendo el espacio (\"La \" = 3, \"Los \" = 4).\r\n\r\n2. AUTORIDADES DE MATERIA CAMPO 650 $a (BNMM Y KOHA):\r\n   - En 650 $a solo van términos Autorizados (A). Si propone un término No Autorizado (NA), indícale \"(NA) -> Usar: [Término Autorizado (A)]\" y sugiere 3 opciones Autorizadas (A) específicas.\r\n   - Caso testigo: \"mente\" -> \"Mente (NA)\" / \"Mente -- Enfermedades (NA)\" -> Usar: \"Inteligencia (A)\". Opciones (A): \"Mente y cuerpo (A)\", \"Ciencias de la mente (A)\", \"Filosofía de la mente (A)\", \"Curación por la mente (A)\".\r\n   - Regla BNMM: Los campos controlados (1XX, 6XX, 7XX) NO llevan punto final y NUNCA van todos en mayúsculas. Términos libres van en 653 $a.\r\n\r\n3. CLASIFICACIÓN DECIMAL DEWEY EDICIÓN 23 (CAMPO 082):\r\n   - Construye el número según DDC 23 detallando en 3 líneas la jerarquía (Clase + División + Sección + Tabla auxiliar si aplica).\r\n   - Carga en Koha: 082 [Pestaña 0] -> Ind: 04 | $a [Número] | $2 23 (y en el ejemplar: 952 $o).\r\n\r\n4. ERRORES FRECUENTES EN KOHA:\r\n   - 🟡 Autogestión (Lo resuelve el alumno en Koha):\r\n     • \"Can't save this record\": Faltan obligatorios -> clic en 000 y 008 (Pestaña 0), completar 245 $a (Pestaña 2) y 942 $c (Pestaña 9).\r\n     • Campo 100 o 650 bloqueado/grisado: Usar el ícono de búsqueda/lupa al lado del $a para vincular una autoridad existente.\r\n     • Error en 952 / \"Barcode already exists\": Código repetido en 952 $p o faltan 952 $a (origen), 952 $b (actual) y 952 $y (tipo de ítem).\r\n     • Caracteres rotos (Ã±) en Z39.50: Conflicto UTF-8/MARC-8, corregir a mano.\r\n   - 🔴 Servidor/Soporte (Requiere aviso):\r\n     • Libro guardado no aparece en el buscador: Indexador Zebra/Elasticsearch caído. No volver a cargar el libro.\r\n     • Error 500 / 502 / 504 / Software error: Caída de Plack/servidor.\r\n\r\n================================================================================\r\nPLANTILLAS DE RESPUESTA (USA SOLO LA QUE CORRESPONDA AL PEDIDO):\r\n================================================================================\r\n\r\n1. SI ENVÍA \"/start\" O UN SALUDO:\r\n¡Hola! Soy Norma 📚, tu asistente de Bibliotecología.\r\n\r\nDime qué tarea quieres hacer hoy (si mandas foto de un libro, escribe en el comentario qué opción necesitas):\r\n\r\n1️⃣ /rcaa2 + datos o foto ➔ Armo la Ficha ISBD y reglas RCAA2.\r\n2️⃣ /marc + datos o foto ➔ Armo la guía de carga en Koha (MARC21).\r\n3️⃣ /auditoria + tu ejercicio o captura de Koha ➔ Corrijo tus errores paso a paso.\r\n4️⃣ /dewey o /materia + tema ➔ Clasificación DDC 23 (082) o Autoridades BNMM (650).\r\n5️⃣ /koha + error o captura ➔ Solución técnica o mail para soporte.\r\n\r\n2. SI ENVÍA FOTO DE UN LIBRO O DATOS SUELTOS SIN ACLARAR QUÉ QUIERE:\r\n📖 DATOS IDENTIFICADOS:\r\n• Título / Autor: [Datos leídos]\r\n• Edición / Pie de imprenta / ISBN: [Datos leídos]\r\n• Datos faltantes en la imagen: [Ej: Falta portada o paginación/cm]\r\n\r\n¿Qué necesitas hacer con este material? Copia los datos identificados o reenvía la foto indicando en el comentario:\r\n👉 \"Ficha ISBD\" (/rcaa2)\r\n👉 \"Carga en Koha MARC21\" (/marc)\r\n👉 \"Clasificación Dewey\" (/dewey)\r\n\r\n3. SI ENVÍA UN COMANDO VACÍO (ej. solo \"/rcaa2\", \"/marc\", \"/auditoria\", \"/validar\", \"/dewey\", \"/materia\" o \"/koha\"):\r\n👉 Para usar esta función, escríbeme el comando seguido de tu consulta (ej: \"/dewey historia económica argentina\") o envíame la foto/datos poniendo en el comentario qué necesitas hacer.\r\n\r\n4. SI PIDE FICHA / RCAA2 (\"/rcaa2\" o pide catalogación descriptiva):\r\n📋 FICHA ISBD (RCAA2):\r\n[Ficha ISBD completa respetando puntuación y espacios]\r\n\r\n📌 Criterios RCAA2 aplicados:\r\n• [1 o 2 reglas clave aplicadas, ej: uso de corchetes, abreviaturas, mayúsculas Apéndice A]\r\n\r\n5. SI PIDE CARGA EN KOHA / MARC21 (\"/marc\" o pide cómo cargarlo en Koha):\r\n💻 CARGA EN KOHA (MARC21):\r\n(Nota: En \"Ind\", el símbolo # significa dejar el casillero vacío)\r\n\r\n• 020 [ISBN - Pestaña 0]\r\n  Ind: ## | $a [ISBN con guiones] | $q [encuadernación]\r\n• 100 [Autor principal - Pestaña 1]\r\n  Ind: 1# | $a [Apellido, Nombre sin punto final]\r\n• 245 [Título y responsabilidad - Pestaña 2]\r\n  Ind: 1X | $a [Título] : | $b [subtítulo] / | $c [responsabilidad].\r\n• 250 [Edición - Pestaña 2]\r\n  Ind: ## | $a [Edición]\r\n• 260 [Publicación - Pestaña 2]\r\n  Ind: ## | $a [Lugar] : | $b [Editorial limpia], | $c [Año].\r\n• 300 [Descripción física - Pestaña 3]\r\n  Ind: ## | $a [Páginas] : | $b [il.] ; | $c [X cm]\r\n\r\n6. SI PIDE AUDITORÍA O ENVÍA CAPTURA DE SU CARGA EN KOHA (\"/auditoria\", \"/validar\" o pide corregir su ejercicio):\r\n🔍 AUDITORÍA RCAA2 / BNMM:\r\n🔴 [Error detectado + regla y cómo corregirlo en 1 línea]\r\n🟡 [Dato faltante o advertencia en 1 línea]\r\n🟢 [Puntos correctos]\r\n\r\n✅ Corrección lista para copiar:\r\n[Mostrar únicamente la línea o el campo corregido con su nombre y pestaña]\r\n\r\n7. SI PIDE DEWEY (\"/dewey\" o pide clasificar):\r\n🔢 CLASIFICACIÓN DEWEY 23: [Número]\r\n\r\n🧭 Construcción:\r\n• [Clase/División]\r\n• [Sección / Tabla auxiliar aplicada]\r\n• Criterio: [1 línea explicando por qué va en esa disciplina]\r\n\r\n💻 Carga en Koha:\r\n• 082 [Clasificación Dewey - Pestaña 0]\r\n  Ind: 04 | $a [Número] | $2 23 (y en el ejemplar: 952 $o).\r\n\r\n8. SI PIDE MATERIA (\"/materia\" o consulta campo 650):\r\n🏷️ AUTORIDAD DE MATERIA (BNMM):\r\nEstado: [Término] (NA) ➔ Usar: [Término Autorizado] (A)\r\n(O indicar si ya es Autorizado (A)).\r\n\r\n📋 Específicos relacionados (A):\r\n• [Opción 1 (A)]\r\n• [Opción 2 (A)]\r\n• [Opción 3 (A)]\r\n\r\n💻 Carga en Koha (sin punto final):\r\n• 650 [Tema / Materia - Pestaña 6]\r\n  Ind: #4 | $a [Término] (usar $x tema, $z lugar, $v forma si aplica; libres en 653 $a).\r\n\r\n9. SI REPORTA UN ERROR DE KOHA O ENVÍA CAPTURA DE UN FALLO (\"/koha\"):\r\n🔍 DIAGNÓSTICO: [🟡 Autogestión en Koha / 🔴 Falla de servidor]\r\n[Explicación de 2 líneas].\r\n\r\n🛠️ SOLUCIÓN PASO A PASO:\r\n[2 o 3 pasos concretos de qué tocar en Koha].\r\n\r\n✉️ MAIL PARA DOCENTE / SOPORTE (si aplica):\r\nAsunto: [Asunto breve]\r\n[Cuerpo de 4 líneas formal y claro]."
+                                        }
+                                    ]
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 300
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "1c5fa916c6edf0b6"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "model": {
+                                            "mode": "chose",
+                                            "label": "Gemini 3.5 Flash"
+                                        },
+                                        "contents": {
+                                            "mode": "chose",
+                                            "items": [
+                                                {
+                                                    "role": {
+                                                        "mode": "chose",
+                                                        "label": "User"
+                                                    },
+                                                    "parts": {
+                                                        "mode": "chose",
+                                                        "items": [
+                                                            {
+                                                                "type": {
+                                                                    "mode": "chose",
+                                                                    "label": "Text"
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": {
+                                                                    "mode": "chose",
+                                                                    "label": "File"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "serviceTier": {
+                                            "mode": "chose",
+                                            "label": "Empty"
+                                        },
+                                        "url_context": {
+                                            "mode": "chose"
+                                        },
+                                        "code_execution": {
+                                            "mode": "chose"
+                                        },
+                                        "safetySettings": {
+                                            "mode": "chose"
+                                        },
+                                        "generationConfig": {
+                                            "nested": {
+                                                "imageConfig": {
+                                                    "nested": {
+                                                        "imageSize": {
+                                                            "mode": "chose",
+                                                            "label": "Empty"
+                                                        }
+                                                    }
+                                                },
+                                                "stopSequences": {
+                                                    "mode": "chose"
+                                                },
+                                                "thinkingConfig": {
+                                                    "nested": {
+                                                        "thinking_level": {
+                                                            "mode": "chose",
+                                                            "label": "Empty"
+                                                        },
+                                                        "include_thoughts": {
+                                                            "mode": "chose"
+                                                        }
+                                                    }
+                                                },
+                                                "mediaResolution": {
+                                                    "mode": "chose",
+                                                    "label": "Empty"
+                                                },
+                                                "responseMimeType": {
+                                                    "mode": "chose",
+                                                    "label": "Empty"
+                                                },
+                                                "responseModalities": {
+                                                    "mode": "chose"
+                                                }
+                                            }
+                                        },
+                                        "system_instruction": {
+                                            "nested": {
+                                                "parts": {
+                                                    "mode": "chose",
+                                                    "items": [
+                                                        null
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "google_maps_context": {
+                                            "mode": "chose"
+                                        },
+                                        "google_search_context": {
+                                            "mode": "chose"
+                                        },
+                                        "file_search_store_context": {
+                                            "mode": "chose"
+                                        },
+                                        "function_declarations_context": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "gemini-ai-q9zyjp"
+                                            },
+                                            "label": "Sofía's Gemini AI connection"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:gemini-ai-q9zyjp",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "model",
+                                        "type": "select",
+                                        "label": "AI Model",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "contents",
+                                        "spec": [
+                                            {
+                                                "name": "role",
+                                                "type": "select",
+                                                "label": "Role",
+                                                "options": [
+                                                    {
+                                                        "label": "User",
+                                                        "value": "user"
+                                                    },
+                                                    {
+                                                        "label": "Model",
+                                                        "value": "model"
+                                                    }
+                                                ],
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "parts",
+                                                "spec": [
+                                                    {
+                                                        "name": "type",
+                                                        "type": "select",
+                                                        "label": "Message Type",
+                                                        "options": [
+                                                            {
+                                                                "label": "Text",
+                                                                "value": "text",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "text",
+                                                                        "type": "text",
+                                                                        "label": "Text",
+                                                                        "required": true
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "label": "File",
+                                                                "value": "file",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "file_data",
+                                                                        "spec": [
+                                                                            {
+                                                                                "name": "mime_type",
+                                                                                "type": "text",
+                                                                                "label": "Mime Type",
+                                                                                "required": true
+                                                                            },
+                                                                            {
+                                                                                "help": "You can use public or signed URLs as input by using the URLs.",
+                                                                                "name": "file_uri",
+                                                                                "type": "text",
+                                                                                "label": "File URI",
+                                                                                "required": true
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "label": "File Data",
+                                                                        "required": true
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "label": "Function Call",
+                                                                "value": "functionCall",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "functionCall",
+                                                                        "spec": [
+                                                                            {
+                                                                                "help": "The name of the function to call.",
+                                                                                "name": "name",
+                                                                                "type": "text",
+                                                                                "label": "Name",
+                                                                                "required": true,
+                                                                                "validate": {
+                                                                                    "max": 64
+                                                                                }
+                                                                            },
+                                                                            {
+                                                                                "help": "The function parameters and values in JSON object format.",
+                                                                                "name": "args",
+                                                                                "type": "json",
+                                                                                "label": "Arguments"
+                                                                            },
+                                                                            {
+                                                                                "help": "The unique ID of the function call.",
+                                                                                "name": "id",
+                                                                                "type": "text",
+                                                                                "label": "Function Call ID"
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "label": "Function Call"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "label": "Function Response",
+                                                                "value": "functionResponse",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "functionResponse",
+                                                                        "spec": [
+                                                                            {
+                                                                                "help": "The name of the function to call.",
+                                                                                "name": "name",
+                                                                                "type": "text",
+                                                                                "label": "Name",
+                                                                                "required": true,
+                                                                                "validate": {
+                                                                                    "max": 64
+                                                                                }
+                                                                            },
+                                                                            {
+                                                                                "help": "The function response in JSON object format.",
+                                                                                "name": "response",
+                                                                                "type": "json",
+                                                                                "label": "Response",
+                                                                                "required": true
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "label": "Function Response"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ],
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "thoughtSignature",
+                                                        "type": "text",
+                                                        "label": "Thought Signature"
+                                                    }
+                                                ],
+                                                "type": "array",
+                                                "label": "Parts",
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Messages",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "system_instruction",
+                                        "spec": [
+                                            {
+                                                "name": "parts",
+                                                "spec": {
+                                                    "name": "value",
+                                                    "spec": [
+                                                        {
+                                                            "name": "text",
+                                                            "type": "text",
+                                                            "label": "Value"
+                                                        }
+                                                    ],
+                                                    "type": "collection",
+                                                    "label": "Prompt"
+                                                },
+                                                "type": "array",
+                                                "label": "Prompts"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "System Instructions"
+                                    },
+                                    {
+                                        "name": "safetySettings",
+                                        "spec": [
+                                            {
+                                                "name": "category",
+                                                "type": "select",
+                                                "label": "Category",
+                                                "options": [
+                                                    {
+                                                        "label": "Harassment content",
+                                                        "value": "HARM_CATEGORY_HARASSMENT"
+                                                    },
+                                                    {
+                                                        "label": "Hate speech and content",
+                                                        "value": "HARM_CATEGORY_HATE_SPEECH"
+                                                    },
+                                                    {
+                                                        "label": "Sexually explicit content.",
+                                                        "value": "HARM_CATEGORY_SEXUALLY_EXPLICIT"
+                                                    },
+                                                    {
+                                                        "label": "Dangerous content:",
+                                                        "value": "HARM_CATEGORY_DANGEROUS_CONTENT"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "name": "threshold",
+                                                "type": "select",
+                                                "label": "Threshold",
+                                                "options": [
+                                                    {
+                                                        "label": "Block low and above.",
+                                                        "value": "BLOCK_LOW_AND_ABOVE"
+                                                    },
+                                                    {
+                                                        "label": "Block medium and above.",
+                                                        "value": "BLOCK_MEDIUM_AND_ABOVE"
+                                                    },
+                                                    {
+                                                        "label": "Block only high.",
+                                                        "value": "BLOCK_ONLY_HIGH"
+                                                    },
+                                                    {
+                                                        "label": "Block none.",
+                                                        "value": "BLOCK_NONE"
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Safety Settings"
+                                    },
+                                    {
+                                        "name": "generationConfig",
+                                        "spec": [
+                                            {
+                                                "name": "stopSequences",
+                                                "spec": {
+                                                    "name": "value",
+                                                    "type": "text",
+                                                    "label": "Stop Sequence"
+                                                },
+                                                "type": "array",
+                                                "label": "Stop Sequences"
+                                            },
+                                            {
+                                                "name": "responseModalities",
+                                                "type": "select",
+                                                "label": "Response Modalities",
+                                                "multiple": true,
+                                                "validate": {
+                                                    "enum": [
+                                                        "text",
+                                                        "image"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "maxOutputTokens",
+                                                "type": "number",
+                                                "label": "Max Output Tokens"
+                                            },
+                                            {
+                                                "name": "temperature",
+                                                "type": "number",
+                                                "label": "Temperature",
+                                                "validate": {
+                                                    "max": 1,
+                                                    "min": 0
+                                                }
+                                            },
+                                            {
+                                                "name": "topP",
+                                                "type": "number",
+                                                "label": "Top P",
+                                                "validate": {
+                                                    "max": 1,
+                                                    "min": 0
+                                                }
+                                            },
+                                            {
+                                                "name": "topK",
+                                                "type": "number",
+                                                "label": "Top K"
+                                            },
+                                            {
+                                                "name": "thinkingConfig",
+                                                "spec": [
+                                                    {
+                                                        "name": "thinkingBudget",
+                                                        "type": "number",
+                                                        "label": "Thinking Budget"
+                                                    },
+                                                    {
+                                                        "name": "include_thoughts",
+                                                        "type": "boolean",
+                                                        "label": "Include Thoughts"
+                                                    },
+                                                    {
+                                                        "name": "thinking_level",
+                                                        "type": "select",
+                                                        "label": "Thinking Level",
+                                                        "validate": {
+                                                            "enum": [
+                                                                "low",
+                                                                "high"
+                                                            ]
+                                                        }
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "Thinking Config"
+                                            },
+                                            {
+                                                "name": "mediaResolution",
+                                                "type": "select",
+                                                "label": "Media Resolution",
+                                                "validate": {
+                                                    "enum": [
+                                                        "media_resolution_low",
+                                                        "media_resolution_medium",
+                                                        "media_resolution_high"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "imageConfig",
+                                                "spec": [
+                                                    {
+                                                        "name": "imageSize",
+                                                        "type": "select",
+                                                        "label": "Image Size",
+                                                        "validate": {
+                                                            "enum": [
+                                                                "1K",
+                                                                "2K",
+                                                                "4K"
+                                                            ]
+                                                        }
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "Image Configuration"
+                                            },
+                                            {
+                                                "name": "responseMimeType",
+                                                "type": "select",
+                                                "label": "Response Format"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Generation configurations"
+                                    },
+                                    {
+                                        "name": "tools",
+                                        "type": "any",
+                                        "label": "Tools"
+                                    },
+                                    {
+                                        "name": "tool_config",
+                                        "type": "any",
+                                        "label": "Tool Config"
+                                    },
+                                    {
+                                        "name": "function_declarations_context",
+                                        "type": "boolean",
+                                        "label": "Function Declarations Grounding"
+                                    },
+                                    {
+                                        "name": "url_context",
+                                        "type": "boolean",
+                                        "label": "URL Context"
+                                    },
+                                    {
+                                        "name": "google_search_context",
+                                        "type": "boolean",
+                                        "label": "Google Search Grounding"
+                                    },
+                                    {
+                                        "name": "code_execution",
+                                        "type": "boolean",
+                                        "label": "Code Execution"
+                                    },
+                                    {
+                                        "name": "google_maps_context",
+                                        "type": "boolean",
+                                        "label": "Google Maps Grounding"
+                                    },
+                                    {
+                                        "name": "file_search_store_context",
+                                        "type": "boolean",
+                                        "label": "File Search Store Context"
+                                    },
+                                    {
+                                        "name": "serviceTier",
+                                        "type": "select",
+                                        "label": "Inference Service Tier"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 8,
+                            "module": "telegram:SendReplyMessage",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 11819455
+                            },
+                            "mapper": {
+                                "text": "{{7.result}}",
+                                "chatId": "{{1.message.chat.id}}",
+                                "parseMode": "",
+                                "replyMarkup": "",
+                                "messageThreadId": "",
+                                "replyToMessageId": "",
+                                "replyMarkupAssembleType": "reply_markup_enter"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1500,
+                                    "y": 300
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "2ecd6f032ecd68e"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "parseMode": {
+                                            "label": "Empty"
+                                        },
+                                        "disableNotification": {
+                                            "mode": "chose"
+                                        },
+                                        "replyMarkupAssembleType": {
+                                            "label": "Enter the Reply Markup"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "telegram"
+                                            },
+                                            "label": "Telegram NormaBot"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:telegram",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "chatId",
+                                        "type": "text",
+                                        "label": "Chat ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "text",
+                                        "type": "text",
+                                        "label": "Text",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "messageThreadId",
+                                        "type": "number",
+                                        "label": "Message Thread ID"
+                                    },
+                                    {
+                                        "name": "parseMode",
+                                        "type": "select",
+                                        "label": "Parse Mode",
+                                        "validate": {
+                                            "enum": [
+                                                "Markdown",
+                                                "HTML"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "disableNotification",
+                                        "type": "boolean",
+                                        "label": "Disable Notifications"
+                                    },
+                                    {
+                                        "name": "disableWebPagePreview",
+                                        "type": "boolean",
+                                        "label": "Disable Link Previews"
+                                    },
+                                    {
+                                        "name": "replyToMessageId",
+                                        "type": "number",
+                                        "label": "Original Message ID"
+                                    },
+                                    {
+                                        "name": "replyMarkupAssembleType",
+                                        "type": "select",
+                                        "label": "Enter/Assemble the Reply Markup Field",
+                                        "validate": {
+                                            "enum": [
+                                                "reply_markup_enter",
+                                                "reply_markup_assemble"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "replyMarkup",
+                                        "type": "text",
+                                        "label": "Reply Markup"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    }
+}
+
+esto como lo puedo subir a un repositorio?
+
+me armas el readme  y el license y la descripcion del repositorio
