@@ -1,4 +1,4 @@
-# NormaBot 📚
+# NormaBot 📚 @norma_cata_bot
 
 Asistente virtual de Bibliotecología integrado en Telegram y potenciado por Inteligencia Artificial (Google Gemini), diseñado para asistir a estudiantes y profesionales en catalogación descriptiva y temática (RCAA2, ISBD, MARC21, Dewey 23, BNMM y Koha).
 
